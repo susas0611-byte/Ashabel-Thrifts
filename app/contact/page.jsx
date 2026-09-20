@@ -195,7 +195,7 @@ export default function ContactPage() {
       {/* Dark Footer Bar locked at the very bottom */}
       <footer className="bg-slate-950 text-slate-400 py-6 px-4 border-t border-slate-800/80 text-center text-xs tracking-wide w-full">
         <div className="max-w-7xl mx-auto">
-          © 2026 Ashabel Footwear. All rights reserved.[cite: 3]
+          © 2026 Ashabel Footwear. All rights reserved.
         </div>
       </footer>
 
