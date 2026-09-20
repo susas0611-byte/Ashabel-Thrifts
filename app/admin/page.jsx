@@ -8,16 +8,91 @@ export default function AdminPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
 
-  // Load products from localStorage on mount
+  // Load products from localStorage on mount with all 8 original items as fallback
   useEffect(() => {
     const saved = localStorage.getItem("ashabel_products");
     if (saved) {
       setProducts(JSON.parse(saved));
     } else {
-      // Default initial products if none exist
       const initial = [
-        { id: 1, name: "Rainbow Gradient Athletic Sneaker", category: "Women's Sneakers", price: "1,000", size: "Size 39", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800" },
-        { id: 2, name: "Classic White High-Top Platform", category: "Casual Shoes", price: "1,000", size: "Size 38", image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&q=80&w=800" },
+        {
+          id: 1,
+          name: "Rainbow Gradient Athletic Sneaker",
+          category: "Women's Sneakers",
+          price: "1,000",
+          originalPrice: 2200,
+          image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+          size: "Size 39",
+          badge: "Hot Deal"
+        },
+        {
+          id: 2,
+          name: "Classic White High-Top Platform",
+          category: "Casual Shoes",
+          price: "1,000",
+          originalPrice: 2500,
+          image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&q=80&w=800",
+          size: "Size 38",
+          badge: "Best Seller"
+        },
+        {
+          id: 3,
+          name: "Sky Blue Performance Runner",
+          category: "Sport Shoes",
+          price: "1,500",
+          originalPrice: 3200,
+          image: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&q=80&w=800",
+          size: "Size 42",
+          badge: "Trending"
+        },
+        {
+          id: 4,
+          name: "Midnight Black Knit Comfort Trainer",
+          category: "Sport Shoes",
+          price: "1,000",
+          originalPrice: 2400,
+          image: "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&q=80&w=800",
+          size: "Size 38",
+          badge: "Popular"
+        },
+        {
+          id: 5,
+          name: "Urban Street White & Navy Kicks",
+          category: "Casual Shoes",
+          price: "1,800",
+          originalPrice: 3500,
+          image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&q=80&w=800",
+          size: "Size 42",
+        },
+        {
+          id: 6,
+          name: "All-Terrain Stealth Black Runner",
+          category: "Sport Shoes",
+          price: "1,600",
+          originalPrice: 3000,
+          image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&q=80&w=800",
+          size: "Size 41",
+          badge: "New Drop"
+        },
+        {
+          id: 7,
+          name: "Neon Highlight White Runner",
+          category: "Sport Shoes",
+          price: "1,500",
+          originalPrice: 3100,
+          image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&q=80&w=800",
+          size: "Size 42",
+        },
+        {
+          id: 8,
+          name: "Sky Blue & Orange Accent Sneaker",
+          category: "Casual Shoes",
+          price: "1,000",
+          originalPrice: 2200,
+          image: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&q=80&w=800",
+          size: "Size 38",
+          badge: "Special Offer"
+        }
       ];
       setProducts(initial);
       localStorage.setItem("ashabel_products", JSON.stringify(initial));
