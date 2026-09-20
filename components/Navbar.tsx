@@ -11,23 +11,24 @@ export default function Navbar() {
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
 
-  useEffect(() => {
+ useEffect(() => {
     const updateCount = () => {
-      const savedCart = localStorage.getItem("cart");
-      if (savedCart) {
-        try {
+      try {
+        const savedCart = localStorage.getItem("cart");
+        if (savedCart) {
           const parsed = JSON.parse(savedCart);
-          const count = parsed.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0);
+          const count = parsed.reduce((sum: number, item: { quantity?: number }) => sum + (Number(item.quantity) || 1), 0);
           setTotalItems(count);
-        } catch (e) {
+        } else {
           setTotalItems(0);
         }
-      } else {
+      } catch (e) {
         setTotalItems(0);
       }
     };
 
     updateCount();
+
     window.addEventListener("storage", updateCount);
     window.addEventListener("cartUpdated", updateCount);
 
@@ -67,8 +68,9 @@ export default function Navbar() {
         <div className="flex items-center space-x-3">
           {/* Cart Icon Button - Opens Drawer */}
           <button 
+            type="button"
             onClick={handleOpenCart}
-            className="relative p-2 text-gray-700 hover:text-amber-500 transition-colors cursor-pointer"
+            className="relative p-2 text-gray-700 hover:text-amber-500 transition-colors cursor-pointer touch-manipulation"
             aria-label="Open Cart"
           >
             <ShoppingBag className="w-6 h-6" />
@@ -80,8 +82,9 @@ export default function Navbar() {
           </button>
 
           <button 
+            type="button"
             onClick={toggleMenu}
-            className="md:hidden p-2 text-gray-700 hover:text-amber-500 transition-colors focus:outline-none"
+            className="md:hidden p-2 text-gray-700 hover:text-amber-500 transition-colors focus:outline-none touch-manipulation"
             aria-label="Toggle Menu"
           >
             {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
