@@ -34,22 +34,30 @@ export default function ShopPage() {
     return matchesCategory && matchesSearch;
   });
 
- const handleAddToCart = (product) => {
+const handleAddToCart = (product) => {
     if (!product) return;
     setAddedId(product.id);
     
-    try {
-      const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
-      const itemIndex = existingCart.findIndex((item) => String(item.id) === String(product.id));
+    const productToAdd = {
+      id: product.id,
+      name: product.name || "Footwear Item",
+      price: Number(product.price) || 0,
+      image: product.image || "",
+      size: product.size || "Standard",
+      category: product.category || "Shoes"
+    };
 
-      const productToAdd = {
-        id: product.id,
-        name: product.name || "Footwear Item",
-        price: Number(product.price) || 0,
-        image: product.image || "",
-        size: product.size || "Standard",
-        category: product.category || "Shoes"
-      };
+    try {
+      // Safely check and write to localStorage
+      let existingCart = [];
+      try {
+        const saved = localStorage.getItem("cart");
+        if (saved) existingCart = JSON.parse(saved);
+      } catch (e) {
+        console.warn("localStorage restricted, using memory fallback");
+      }
+
+      const itemIndex = existingCart.findIndex((item) => String(item.id) === String(product.id));
 
       if (itemIndex > -1) {
         existingCart[itemIndex].quantity = (Number(existingCart[itemIndex].quantity) || 1) + 1;
@@ -57,19 +65,24 @@ export default function ShopPage() {
         existingCart.push({ ...productToAdd, quantity: 1 });
       }
 
-      localStorage.setItem("cart", JSON.stringify(existingCart));
-      localStorage.setItem("shouldOpenCart", "true"); 
+      try {
+        localStorage.setItem("cart", JSON.stringify(existingCart));
+        localStorage.setItem("shouldOpenCart", "true");
+      } catch (e) {
+        console.warn("Could not save to localStorage");
+      }
       
       // Dispatch events for immediate mobile layout update
       window.dispatchEvent(new Event("storage"));
       window.dispatchEvent(new CustomEvent("cartUpdated"));
+
     } catch (error) {
-      console.error("Error adding to cart:", error);
-      alert("Could not add to cart. Please try again.");
+      console.error("Cart error on mobile:", error);
     }
 
     setTimeout(() => setAddedId(null), 1500);
   };
+
   
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
