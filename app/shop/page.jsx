@@ -36,6 +36,24 @@ export default function ShopPage() {
 
   const handleAddToCart = (product) => {
     setAddedId(product.id);
+    
+    // Save item to localStorage cart
+    const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const itemIndex = existingCart.findIndex((item) => item.id === product.id);
+
+    if (itemIndex > -1) {
+      existingCart[itemIndex].quantity = (existingCart[itemIndex].quantity || 1) + 1;
+    } else {
+      existingCart.push({ ...product, quantity: 1 });
+    }
+
+    localStorage.setItem("cart", JSON.stringify(existingCart));
+    
+    // Dispatch events and use a storage/timestamp trick so layouts notice the change instantly
+    window.dispatchEvent(new Event("cartUpdated"));
+    window.dispatchEvent(new Event("storage"));
+    localStorage.setItem("forceOpenCart", Date.now().toString()); // Triggers storage listener globally across pages
+
     setTimeout(() => setAddedId(null), 1500);
   };
 

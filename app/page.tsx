@@ -1,6 +1,7 @@
 "use client";
 import { useRef } from 'react'; 
 import React, { useState, useEffect } from "react";
+import Navbar from "@/components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ShoppingBag, 
@@ -119,8 +120,6 @@ const PRODUCTS: Product[] = [
   }
 ];
 
-
-
 const CATEGORIES = ["All", "Sport Shoes", "Casual Shoes", "Women's Sneakers"];
 
 export default function Home() {
@@ -129,6 +128,50 @@ export default function Home() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Load cart from localStorage on mount and listen for changes from the shop page
+
+  // Load cart from localStorage on mount and listen for changes from the shop page
+  useEffect(() => {
+    const loadCart = () => {
+      const savedCart = localStorage.getItem("cart");
+      if (savedCart) {
+        try {
+          setCart(JSON.parse(savedCart));
+        } catch (e) {
+          console.error("Failed to parse cart", e);
+        }
+      } else {
+        setCart([]);
+      }
+    };
+
+    // Handler that forces the cart drawer to pop open
+    const handleForceOpen = () => {
+      setIsCartOpen(true);
+    };
+
+    loadCart();
+
+    window.addEventListener("storage", loadCart);
+    window.addEventListener("cartUpdated", loadCart);
+    window.addEventListener("forceOpenCart", handleForceOpen); // <--- Listen for the drawer open signal!
+
+    return () => {
+      window.removeEventListener("storage", loadCart);
+      window.removeEventListener("cartUpdated", loadCart);
+      window.removeEventListener("forceOpenCart", handleForceOpen);
+    };
+  }, []);
+
+  // Helper function to sync state changes to localStorage
+  const saveAndSetCart = (newCart: CartItem[] | ((prev: CartItem[]) => CartItem[])) => {
+    setCart((prev) => {
+      const updated = typeof newCart === "function" ? newCart(prev) : newCart;
+      localStorage.setItem("cart", JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   // Rotating Shoe Types Hook & Logic
   const shoeTypes = ["✨ High-End Sport Shoes", "🔥 Casual Street Sneakers", "👟 Women's Collection"];
@@ -149,7 +192,7 @@ export default function Home() {
   });
 
   const addToCart = (product: Product) => {
-    setCart((prev) => {
+    saveAndSetCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {
         return prev.map((item) => 
@@ -162,7 +205,7 @@ export default function Home() {
   };
 
   const updateQuantity = (id: number, delta: number) => {
-    setCart((prev) => 
+    saveAndSetCart((prev) => 
       prev.map((item) => {
         if (item.id === id) {
           const newQty = item.quantity + delta;
@@ -174,7 +217,7 @@ export default function Home() {
   };
 
   const removeFromCart = (id: number) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
+    saveAndSetCart((prev) => prev.filter((item) => item.id !== id));
   };
 
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -182,7 +225,6 @@ export default function Home() {
 
   // WhatsApp Checkout Handler
   const handleWhatsAppCheckout = () => {
-    // Replace with your actual WhatsApp business number (e.g. 2547XXXXXXXX)
     const phoneNumber = "+254722489487"; 
 
     let message = "Hello Ashabel Footwear! I'd like to place an order:%0A%0A";
@@ -200,8 +242,7 @@ export default function Home() {
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
     window.open(whatsappUrl, "_blank");
 
-    // Clear cart and close drawer after checkout prompt
-    setCart([]);
+    saveAndSetCart([]);
     setIsCartOpen(false);
   };
 
@@ -212,7 +253,6 @@ export default function Home() {
       <div className="bg-slate-900 text-slate-300 text-xs sm:text-sm py-2 px-4 text-center font-medium tracking-wide">
         ⚡ Premium Footwear Collection • Express Delivery Countrywide 🚚
       </div>
-
       
       {/* Hero Section */}
       <section className="relative bg-slate-950 text-white overflow-hidden py-24 lg:py-32">
@@ -782,6 +822,8 @@ export default function Home() {
         </div>
       </footer>
 
+
+
       {/* Cart Drawer / Modal */}
       <AnimatePresence>
         {isCartOpen && (
@@ -859,7 +901,6 @@ export default function Home() {
           </div>
         )}
       </AnimatePresence>
-
-    </div>
+  </div>
   );
 }
