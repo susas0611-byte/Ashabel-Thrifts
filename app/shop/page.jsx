@@ -36,53 +36,48 @@ export default function ShopPage() {
 
 const handleAddToCart = (product) => {
     if (!product) return;
-    setAddedId(product.id);
     
-    // Store only lightweight properties to prevent quota overflow
-    const productToAdd = {
-      id: product.id,
-      name: product.name || "Footwear Item",
-      price: Number(product.price) || 0,
-      image: product.image || "",
-      size: product.size || "Standard",
-      category: product.category || "Shoes",
-      quantity: 1
-    };
-
     try {
+      // Force convert every property to safe primitives to prevent Supabase object crashes
+      const safeProduct = {
+        id: String(product.id),
+        name: String(product.name || "Footwear Item"),
+        price: Number(product.price) || 0,
+        image: String(product.image || ""),
+        size: String(product.size || "Standard"),
+        category: String(product.category || "Shoes"),
+        quantity: 1
+      };
+
       let existingCart = [];
-      try {
-        const saved = localStorage.getItem("cart");
-        if (saved) existingCart = JSON.parse(saved);
-      } catch (e) {
-        existingCart = [];
+      const saved = localStorage.getItem("cart");
+      if (saved) {
+        existingCart = JSON.parse(saved);
       }
 
-      const itemIndex = existingCart.findIndex((item) => String(item.id) === String(product.id));
+      const itemIndex = existingCart.findIndex((item) => String(item.id) === safeProduct.id);
 
       if (itemIndex > -1) {
         existingCart[itemIndex].quantity = (Number(existingCart[itemIndex].quantity) || 1) + 1;
       } else {
-        existingCart.push(productToAdd);
+        existingCart.push(safeProduct);
       }
 
-      // Try saving; if quota fails, clear storage and reset with just this item
-      try {
-        localStorage.setItem("cart", JSON.stringify(existingCart));
-      } catch (quotaError) {
-        localStorage.removeItem("cart");
-        localStorage.setItem("cart", JSON.stringify([productToAdd]));
-      }
-
+      localStorage.setItem("cart", JSON.stringify(existingCart));
       localStorage.setItem("shouldOpenCart", "true");
       
+      // Trigger UI updates
       window.dispatchEvent(new Event("storage"));
       window.dispatchEvent(new CustomEvent("cartUpdated"));
-    } catch (error) {
-      console.error("Cart error:", error);
-    }
 
-    setTimeout(() => setAddedId(null), 1500);
+      // Set button success state ONLY after successful save
+      setAddedId(product.id);
+      setTimeout(() => setAddedId(null), 1500);
+
+    } catch (error) {
+      alert("Cart Save Error: " + error.message);
+      console.error("Shop cart error:", error);
+    }
   };
 
   
