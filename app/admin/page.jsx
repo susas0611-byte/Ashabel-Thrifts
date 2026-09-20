@@ -1,57 +1,74 @@
 "use client";
-import React, { useState } from "react";
-import { Plus, Trash2, Edit, Package, DollarSign, Tag, Image as ImageIcon } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Plus, Trash2, Edit, Package, DollarSign, Tag } from "lucide-react";
 
 export default function AdminPage() {
-  // Sample initial product list (in a real app, this would connect to your database/backend)
-  const [products, setProducts] = useState([
-    { id: 1, name: "Air Jordan Retro High", price: "4,500", size: "42", category: "Sneakers", stock: "In Stock" },
-    { id: 2, name: "Nike Air Max Runner", price: "3,800", size: "40", category: "Runners", stock: "In Stock" },
-  ]);
-
-  const [form, setForm] = useState({ name: "", price: "", size: "", category: "Sneakers", stock: "In Stock" });
+  const [products, setProducts] = useState([]);
+  const [form, setForm] = useState({ name: "", price: "", size: "", category: "Sport Shoes", image: "" });
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
 
-  // Handle form input changes
+  // Load products from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("ashabel_products");
+    if (saved) {
+      setProducts(JSON.parse(saved));
+    } else {
+      // Default initial products if none exist
+      const initial = [
+        { id: 1, name: "Rainbow Gradient Athletic Sneaker", category: "Women's Sneakers", price: "1,000", size: "Size 39", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800" },
+        { id: 2, name: "Classic White High-Top Platform", category: "Casual Shoes", price: "1,000", size: "Size 38", image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&q=80&w=800" },
+      ];
+      setProducts(initial);
+      localStorage.setItem("ashabel_products", JSON.stringify(initial));
+    }
+  }, []);
+
+  const saveProducts = (updatedProducts) => {
+    setProducts(updatedProducts);
+    localStorage.setItem("ashabel_products", JSON.stringify(updatedProducts));
+  };
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Add or Update Product
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.name || !form.price || !form.size) return;
 
     if (isEditing) {
-      setProducts(products.map((p) => (p.id === editId ? { ...p, ...form } : p)));
+      const updated = products.map((p) => (p.id === editId ? { ...p, ...form } : p));
+      saveProducts(updated);
       setIsEditing(false);
       setEditId(null);
     } else {
-      const newProduct = { id: Date.now(), ...form };
-      setProducts([newProduct, ...products]);
+      const newProduct = { 
+        id: Date.now(), 
+        ...form, 
+        image: form.image || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        originalPrice: Number(form.price.replace(/,/g, "")) * 2 || 2000 
+      };
+      saveProducts([newProduct, ...products]);
     }
 
-    setForm({ name: "", price: "", size: "", category: "Sneakers", stock: "In Stock" });
+    setForm({ name: "", price: "", size: "", category: "Sport Shoes", image: "" });
   };
 
-  // Edit Product
   const handleEdit = (product) => {
     setForm(product);
     setIsEditing(true);
     setEditId(product.id);
   };
 
-  // Delete Product
   const handleDelete = (id) => {
-    setProducts(products.filter((p) => p.id !== id));
+    const updated = products.filter((p) => p.id !== id);
+    saveProducts(updated);
   };
 
   return (
     <div className="min-h-screen bg-slate-900 text-white p-6 sm:p-10">
       <div className="max-w-6xl mx-auto">
-        
-        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-6 border-b border-slate-800 gap-4">
           <div>
             <div className="inline-flex items-center gap-1.5 bg-teal-500/10 text-teal-400 border border-teal-500/20 px-3 py-1 rounded-full text-xs font-semibold uppercase mb-2">
@@ -63,8 +80,6 @@ export default function AdminPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Left Column: Add / Edit Product Form */}
           <div className="lg:col-span-4 bg-slate-950 p-6 rounded-3xl border border-slate-800 h-fit">
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Package className="w-5 h-5 text-teal-400" />
@@ -93,7 +108,7 @@ export default function AdminPage() {
                     name="price" 
                     value={form.price} 
                     onChange={handleChange}
-                    placeholder="4,500"
+                    placeholder="1500"
                     required
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-teal-500"
                   />
@@ -120,11 +135,22 @@ export default function AdminPage() {
                   onChange={handleChange}
                   className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-teal-500"
                 >
-                  <option value="Sneakers">Sneakers</option>
-                  <option value="Runners">Runners</option>
-                  <option value="Street Kicks">Street Kicks</option>
-                  <option value="Performance">Performance</option>
+                  <option value="Sport Shoes">Sport Shoes</option>
+                  <option value="Casual Shoes">Casual Shoes</option>
+                  <option value="Women's Sneakers">Women's Sneakers</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Image URL (Optional)</label>
+                <input 
+                  type="text" 
+                  name="image" 
+                  value={form.image} 
+                  onChange={handleChange}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-teal-500"
+                />
               </div>
 
               <div className="pt-2">
@@ -138,7 +164,7 @@ export default function AdminPage() {
                 {isEditing && (
                   <button 
                     type="button"
-                    onClick={() => { setIsEditing(false); setForm({ name: "", price: "", size: "", category: "Sneakers", stock: "In Stock" }); }}
+                    onClick={() => { setIsEditing(false); setForm({ name: "", price: "", size: "", category: "Sport Shoes", image: "" }); }}
                     className="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2 px-4 rounded-xl text-xs transition-colors"
                   >
                     Cancel Edit
@@ -148,7 +174,6 @@ export default function AdminPage() {
             </form>
           </div>
 
-          {/* Right Column: Product Table / List */}
           <div className="lg:col-span-8 bg-slate-950 p-6 rounded-3xl border border-slate-800">
             <h2 className="text-xl font-bold mb-4 flex items-center justify-between">
               <span>Current Catalog ({products.length})</span>
@@ -168,7 +193,10 @@ export default function AdminPage() {
                 <tbody className="divide-y divide-slate-800/60 text-sm">
                   {products.map((product) => (
                     <tr key={product.id} className="hover:bg-slate-900/50 transition-colors">
-                      <td className="py-4 px-4 font-bold text-white">{product.name}</td>
+                      <td className="py-4 px-4 font-bold text-white flex items-center gap-3">
+                        <img src={product.image} alt="" className="w-10 h-10 rounded-xl object-cover bg-slate-800" />
+                        <span className="line-clamp-1">{product.name}</span>
+                      </td>
                       <td className="py-4 px-4 text-slate-400">{product.category}</td>
                       <td className="py-4 px-4 text-slate-300">{product.size}</td>
                       <td className="py-4 px-4 text-teal-400 font-semibold">Ksh {product.price}</td>
@@ -176,14 +204,12 @@ export default function AdminPage() {
                         <button 
                           onClick={() => handleEdit(product)}
                           className="p-2 bg-slate-800 hover:bg-slate-700 text-teal-400 rounded-lg transition-colors inline-flex items-center justify-center"
-                          title="Edit"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={() => handleDelete(product.id)}
                           className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors inline-flex items-center justify-center"
-                          title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -198,11 +224,8 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
-
           </div>
-
         </div>
-
       </div>
     </div>
   );
