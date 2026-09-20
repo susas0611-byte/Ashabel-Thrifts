@@ -34,7 +34,7 @@ export default function ShopPage() {
     return matchesCategory && matchesSearch;
   });
 
-const handleAddToCart = (product) => {
+  const handleAddToCart = (product) => {
     setAddedId(product.id);
     
     // Save item to localStorage cart
@@ -175,6 +175,10 @@ const handleAddToCart = (product) => {
                       
                       <button 
                         onClick={() => handleAddToCart(product)}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          handleAddToCart(product);
+                        }}
                         className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm ${
                           isJustAdded 
                             ? "bg-emerald-600 text-white scale-105" 

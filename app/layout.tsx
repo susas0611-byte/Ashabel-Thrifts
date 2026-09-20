@@ -62,7 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     );
     
     // Replace with your actual WhatsApp phone number (e.g., 2547XXXXXXXX)
-    const phoneNumber = "254700000000"; 
+    const phoneNumber = "254722489487"; 
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
   };
 
