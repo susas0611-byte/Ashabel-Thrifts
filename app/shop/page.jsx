@@ -35,49 +35,32 @@ export default function ShopPage() {
   });
 
 const handleAddToCart = (product) => {
+    alert("Button tapped! Product ID: " + product.id);
+    
     if (!product) return;
     setAddedId(product.id);
     
-    const productToAdd = {
-      id: product.id,
-      name: product.name || "Footwear Item",
-      price: Number(product.price) || 0,
-      image: product.image || "",
-      size: product.size || "Standard",
-      category: product.category || "Shoes"
-    };
-
     try {
-      // Safely check and write to localStorage
       let existingCart = [];
-      try {
-        const saved = localStorage.getItem("cart");
-        if (saved) existingCart = JSON.parse(saved);
-      } catch (e) {
-        console.warn("localStorage restricted, using memory fallback");
-      }
+      const saved = localStorage.getItem("cart");
+      if (saved) existingCart = JSON.parse(saved);
 
       const itemIndex = existingCart.findIndex((item) => String(item.id) === String(product.id));
 
       if (itemIndex > -1) {
         existingCart[itemIndex].quantity = (Number(existingCart[itemIndex].quantity) || 1) + 1;
       } else {
-        existingCart.push({ ...productToAdd, quantity: 1 });
+        existingCart.push({ ...product, quantity: 1 });
       }
 
-      try {
-        localStorage.setItem("cart", JSON.stringify(existingCart));
-        localStorage.setItem("shouldOpenCart", "true");
-      } catch (e) {
-        console.warn("Could not save to localStorage");
-      }
+      localStorage.setItem("cart", JSON.stringify(existingCart));
+      localStorage.setItem("shouldOpenCart", "true");
       
-      // Dispatch events for immediate mobile layout update
       window.dispatchEvent(new Event("storage"));
       window.dispatchEvent(new CustomEvent("cartUpdated"));
-
+      alert("Added successfully!");
     } catch (error) {
-      console.error("Cart error on mobile:", error);
+      alert("Error: " + error.message);
     }
 
     setTimeout(() => setAddedId(null), 1500);
