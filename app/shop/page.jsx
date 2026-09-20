@@ -34,7 +34,7 @@ export default function ShopPage() {
     return matchesCategory && matchesSearch;
   });
 
-  const handleAddToCart = (product) => {
+const handleAddToCart = (product) => {
     setAddedId(product.id);
     
     // Save item to localStorage cart
@@ -48,15 +48,14 @@ export default function ShopPage() {
     }
 
     localStorage.setItem("cart", JSON.stringify(existingCart));
+    localStorage.setItem("shouldOpenCart", "true"); // Ensures mobile picks up the open signal
     
-    // Dispatch events and use a storage/timestamp trick so layouts notice the change instantly
-    window.dispatchEvent(new Event("cartUpdated"));
-    window.dispatchEvent(new Event("storage"));
-    localStorage.setItem("forceOpenCart", Date.now().toString()); // Triggers storage listener globally across pages
+    // Dispatch custom event for immediate mobile & desktop syncing
+    window.dispatchEvent(new CustomEvent("cartUpdated"));
 
     setTimeout(() => setAddedId(null), 1500);
   };
-
+  
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
       
