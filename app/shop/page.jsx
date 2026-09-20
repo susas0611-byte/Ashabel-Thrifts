@@ -34,17 +34,27 @@ export default function ShopPage() {
     return matchesCategory && matchesSearch;
   });
 
-  const handleAddToCart = (product) => {
+ const handleAddToCart = (product) => {
+    if (!product) return;
     setAddedId(product.id);
     
     try {
       const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
       const itemIndex = existingCart.findIndex((item) => String(item.id) === String(product.id));
 
+      const productToAdd = {
+        id: product.id,
+        name: product.name || "Footwear Item",
+        price: Number(product.price) || 0,
+        image: product.image || "",
+        size: product.size || "Standard",
+        category: product.category || "Shoes"
+      };
+
       if (itemIndex > -1) {
         existingCart[itemIndex].quantity = (Number(existingCart[itemIndex].quantity) || 1) + 1;
       } else {
-        existingCart.push({ ...product, quantity: 1 });
+        existingCart.push({ ...productToAdd, quantity: 1 });
       }
 
       localStorage.setItem("cart", JSON.stringify(existingCart));
@@ -55,6 +65,7 @@ export default function ShopPage() {
       window.dispatchEvent(new CustomEvent("cartUpdated"));
     } catch (error) {
       console.error("Error adding to cart:", error);
+      alert("Could not add to cart. Please try again.");
     }
 
     setTimeout(() => setAddedId(null), 1500);
