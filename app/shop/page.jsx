@@ -1,40 +1,30 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, Sparkles, Check } from "lucide-react";
+import { Search, SlidersHorizontal, Sparkles, Check, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const CATEGORIES = ["All", "Sport Shoes", "Casual Shoes", "Women's Sneakers"];
 
-const INITIAL_PRODUCTS = [
-  { id: 1, name: "Rainbow Gradient Athletic Sneaker", category: "Women's Sneakers", price: "1,000", originalPrice: 2200, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800", size: "Size 39", badge: "Hot Deal" },
-  { id: 2, name: "Classic White High-Top Platform", category: "Casual Shoes", price: "1,000", originalPrice: 2500, image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&q=80&w=800", size: "Size 38", badge: "Best Seller" },
-  { id: 3, name: "Sky Blue Performance Runner", category: "Sport Shoes", price: "1,500", originalPrice: 3200, image: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&q=80&w=800", size: "Size 42", badge: "Trending" },
-  { id: 4, name: "Midnight Black Knit Comfort Trainer", category: "Sport Shoes", price: "1,000", originalPrice: 2400, image: "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&q=80&w=800", size: "Size 38", badge: "Popular" },
-  { id: 5, name: "Urban Street White & Navy Kicks", category: "Casual Shoes", price: "1,800", originalPrice: 3500, image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&q=80&w=800", size: "Size 42" },
-  { id: 6, name: "All-Terrain Stealth Black Runner", category: "Sport Shoes", price: "1,600", originalPrice: 3000, image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&q=80&w=800", size: "Size 41", badge: "New Drop" },
-  { id: 7, name: "Neon Highlight White Runner", category: "Sport Shoes", price: "1,500", originalPrice: 3100, image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&q=80&w=800", size: "Size 42" },
-  { id: 8, name: "Sky Blue & Orange Accent Sneaker", category: "Casual Shoes", price: "1,000", originalPrice: 2200, image: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&q=80&w=800", size: "Size 38", badge: "Special Offer" }
-];
-
 export default function ShopPage() {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [addedId, setAddedId] = useState(null);
 
   useEffect(() => {
-    const version = localStorage.getItem("ashabel_version");
-    if (version !== "v2") {
-      localStorage.setItem("ashabel_products", JSON.stringify(INITIAL_PRODUCTS));
-      localStorage.setItem("ashabel_version", "v2");
-      setProducts(INITIAL_PRODUCTS);
-    } else {
-      const saved = localStorage.getItem("ashabel_products");
-      if (saved) {
-        setProducts(JSON.parse(saved));
+    const fetchCloudProducts = async () => {
+      setLoading(true);
+      const { data, error } = await supabase.from("products").select("*").order("id", { ascending: false });
+      if (error) {
+        console.error("Error fetching shop products:", error);
       } else {
-        setProducts(INITIAL_PRODUCTS);
+        setProducts(data || []);
       }
-    }
+      setLoading(false);
+    };
+
+    fetchCloudProducts();
   }, []);
 
   const filteredProducts = products.filter((product) => {
@@ -58,11 +48,11 @@ export default function ShopPage() {
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-1.5 bg-teal-500/10 text-teal-400 border border-teal-500/20 px-3.5 py-1 rounded-full text-xs font-semibold tracking-wider uppercase mb-3">
-              <Sparkles className="w-3.5 h-3.5" /> Curated Inventory
+              <Sparkles className="w-3.5 h-3.5" /> Live Cloud Inventory
             </div>
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight">Explore Our Footwear Catalog</h1>
             <p className="text-slate-400 mt-2 text-sm sm:text-base max-w-xl">
-              Browse top-tier thrift kicks, check available sizes, and order instantly.
+              Real-time updates straight from our store catalog.
             </p>
           </div>
 
@@ -103,13 +93,19 @@ export default function ShopPage() {
             ))}
           </div>
 
-          <div className="text-xs font-semibold text-slate-500">
+          <div className="text-xs font-semibold text-slate-500 flex items-center gap-2">
             Showing <span className="text-slate-900 font-bold">{filteredProducts.length}</span> items
+            {loading && <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600" />}
           </div>
         </div>
 
         {/* Product Grid */}
-        {filteredProducts.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-24 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+            <p className="text-slate-500 text-sm font-medium">Syncing catalog from the cloud...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-3xl border border-slate-200 shadow-sm">
             <p className="text-slate-500 text-lg font-medium">No footwear matches your search criteria.</p>
             <button 
