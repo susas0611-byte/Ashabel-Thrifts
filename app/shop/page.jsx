@@ -201,17 +201,10 @@ const handleAddToCart = (product) => {
                         <div className="text-xs text-slate-400 line-through">Ksh {product.originalPrice || 2500}</div>
                       </div>
                       
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddToCart(product);
-                        }}
-                        onTouchEnd={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          handleAddToCart(product);
-                        }}
-                        className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer relative z-30 touch-manipulation ${
+                     <button 
+                        type="button"
+                        onClick={() => handleAddToCart(product)}
+                        className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer relative z-50 touch-manipulation ${
                           isJustAdded 
                             ? "bg-emerald-600 text-white scale-105" 
                             : "bg-slate-900 hover:bg-teal-600 text-white"
