@@ -38,7 +38,6 @@ export default function ShopPage() {
     setAddedId(product.id);
     
     try {
-      // Save item to localStorage cart securely
       const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
       const itemIndex = existingCart.findIndex((item) => String(item.id) === String(product.id));
 
@@ -51,7 +50,7 @@ export default function ShopPage() {
       localStorage.setItem("cart", JSON.stringify(existingCart));
       localStorage.setItem("shouldOpenCart", "true"); 
       
-      // Dispatch both standard storage and custom event so mobile layouts pick it up instantly
+      // Dispatch events for immediate mobile layout update
       window.dispatchEvent(new Event("storage"));
       window.dispatchEvent(new CustomEvent("cartUpdated"));
     } catch (error) {
@@ -179,8 +178,16 @@ export default function ShopPage() {
                       </div>
                       
                       <button 
-                        onClick={() => handleAddToCart(product)}
-                        className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer relative z-20 ${
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(product);
+                        }}
+                        onTouchEnd={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleAddToCart(product);
+                        }}
+                        className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer relative z-30 touch-manipulation ${
                           isJustAdded 
                             ? "bg-emerald-600 text-white scale-105" 
                             : "bg-slate-900 hover:bg-teal-600 text-white"
