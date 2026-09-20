@@ -35,32 +35,51 @@ export default function ShopPage() {
   });
 
 const handleAddToCart = (product) => {
-    alert("Button tapped! Product ID: " + product.id);
-    
     if (!product) return;
     setAddedId(product.id);
     
+    // Store only lightweight properties to prevent quota overflow
+    const productToAdd = {
+      id: product.id,
+      name: product.name || "Footwear Item",
+      price: Number(product.price) || 0,
+      image: product.image || "",
+      size: product.size || "Standard",
+      category: product.category || "Shoes",
+      quantity: 1
+    };
+
     try {
       let existingCart = [];
-      const saved = localStorage.getItem("cart");
-      if (saved) existingCart = JSON.parse(saved);
+      try {
+        const saved = localStorage.getItem("cart");
+        if (saved) existingCart = JSON.parse(saved);
+      } catch (e) {
+        existingCart = [];
+      }
 
       const itemIndex = existingCart.findIndex((item) => String(item.id) === String(product.id));
 
       if (itemIndex > -1) {
         existingCart[itemIndex].quantity = (Number(existingCart[itemIndex].quantity) || 1) + 1;
       } else {
-        existingCart.push({ ...product, quantity: 1 });
+        existingCart.push(productToAdd);
       }
 
-      localStorage.setItem("cart", JSON.stringify(existingCart));
+      // Try saving; if quota fails, clear storage and reset with just this item
+      try {
+        localStorage.setItem("cart", JSON.stringify(existingCart));
+      } catch (quotaError) {
+        localStorage.removeItem("cart");
+        localStorage.setItem("cart", JSON.stringify([productToAdd]));
+      }
+
       localStorage.setItem("shouldOpenCart", "true");
       
       window.dispatchEvent(new Event("storage"));
       window.dispatchEvent(new CustomEvent("cartUpdated"));
-      alert("Added successfully!");
     } catch (error) {
-      alert("Error: " + error.message);
+      console.error("Cart error:", error);
     }
 
     setTimeout(() => setAddedId(null), 1500);
