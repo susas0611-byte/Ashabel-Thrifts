@@ -37,21 +37,26 @@ export default function ShopPage() {
   const handleAddToCart = (product) => {
     setAddedId(product.id);
     
-    // Save item to localStorage cart
-    const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const itemIndex = existingCart.findIndex((item) => item.id === product.id);
+    try {
+      // Save item to localStorage cart securely
+      const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
+      const itemIndex = existingCart.findIndex((item) => String(item.id) === String(product.id));
 
-    if (itemIndex > -1) {
-      existingCart[itemIndex].quantity = (existingCart[itemIndex].quantity || 1) + 1;
-    } else {
-      existingCart.push({ ...product, quantity: 1 });
+      if (itemIndex > -1) {
+        existingCart[itemIndex].quantity = (Number(existingCart[itemIndex].quantity) || 1) + 1;
+      } else {
+        existingCart.push({ ...product, quantity: 1 });
+      }
+
+      localStorage.setItem("cart", JSON.stringify(existingCart));
+      localStorage.setItem("shouldOpenCart", "true"); 
+      
+      // Dispatch both standard storage and custom event so mobile layouts pick it up instantly
+      window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+    } catch (error) {
+      console.error("Error adding to cart:", error);
     }
-
-    localStorage.setItem("cart", JSON.stringify(existingCart));
-    localStorage.setItem("shouldOpenCart", "true"); // Ensures mobile picks up the open signal
-    
-    // Dispatch custom event for immediate mobile & desktop syncing
-    window.dispatchEvent(new CustomEvent("cartUpdated"));
 
     setTimeout(() => setAddedId(null), 1500);
   };
@@ -175,11 +180,7 @@ export default function ShopPage() {
                       
                       <button 
                         onClick={() => handleAddToCart(product)}
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          handleAddToCart(product);
-                        }}
-                        className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm ${
+                        className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer relative z-20 ${
                           isJustAdded 
                             ? "bg-emerald-600 text-white scale-105" 
                             : "bg-slate-900 hover:bg-teal-600 text-white"

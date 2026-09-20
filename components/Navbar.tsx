@@ -39,7 +39,8 @@ export default function Navbar() {
 
   const handleOpenCart = () => {
     localStorage.setItem("shouldOpenCart", "true");
-    window.dispatchEvent(new Event("cartUpdated"));
+    window.dispatchEvent(new Event("storage"));
+    window.dispatchEvent(new CustomEvent("cartUpdated"));
   };
 
   return (
@@ -52,7 +53,7 @@ export default function Navbar() {
             alt="Ashabel Thrifts" 
             width={140} 
             height={40} 
-            className="h-15 w-auto object-contain"
+            className="h-14 w-auto object-contain"
           />
         </Link>
 
